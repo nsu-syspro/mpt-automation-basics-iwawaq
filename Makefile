@@ -17,4 +17,3 @@ $(BUILD_DIR):
 	mkdir -p $@
 clean:
 	rm -rf $(BUILD_DIR)
-$(EXECUTABLE): $(SOURCE) config.json
