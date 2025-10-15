@@ -1,10 +1,10 @@
-FROM alpine/git AS builder
+FROM alpine:latest AS builder
 RUN apk add --no-cache build-base jq
 WORKDIR /app
 COPY . .
-RUN make all check || exit 0
-FROM alpine
+RUN make check
+FROM alpine:latest
 RUN apk add --no-cache jq
+COPY --from=builder /app /app
 WORKDIR /app
-COPY --from=builder /app/build /app/build
-CMD ./build/$(jq -r .name config.json)
+CMD ["./build/wordcount"]
