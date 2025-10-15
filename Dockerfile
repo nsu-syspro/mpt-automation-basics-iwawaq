@@ -7,4 +7,4 @@ FROM alpine
 RUN apk add --no-cache jq
 WORKDIR /app
 COPY --from=builder /app/build /app/build
-CMD ["/app/build/$(shell jq -r .name config.json)"]
+CMD ./build/$(jq -r .name config.json)
