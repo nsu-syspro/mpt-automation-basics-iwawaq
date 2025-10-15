@@ -7,4 +7,4 @@ FROM alpine:latest
 RUN apk add --no-cache jq
 COPY --from=builder /app /app
 WORKDIR /app
-CMD ["./build/wordcount"]
+CMD ./build/$(jq -r .name config.json)
