@@ -1,5 +1,5 @@
 FROM alpine:latest AS builder
-RUN apk add --no-cache build-base jq
+RUN apk add --no-cache build-base jq make
 WORKDIR /app
 COPY . .
 RUN make check
