@@ -1,18 +1,15 @@
 NAME := $(shell jq -r .name config.json)
 VERSION := $(shell jq -r .version config.json)
-
 BUILD_DIR := build
-
 EXECUTABLE := $(BUILD_DIR)/$(NAME)
-
 SOURCE := src/wordcount.c
-
+CFLAGS := -g -Wall -Wextra -DNAME=\"$(NAME)\" -DVERSION=\"$(VERSION)\"
 CC := gcc
 
 all: $(EXECUTABLE)
 
 $(EXECUTABLE): $(SOURCE) config.json | $(BUILD_DIR)
-	$(CC) -o $@ $<
+	$(CC) $(CFLAGS) -o $@ $<
 $(BUILD_DIR):
 	mkdir -p $@
 clean:
