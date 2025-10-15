@@ -1,7 +1,7 @@
 FROM alpine/git AS builder
 RUN apk add --no-cache build-base jq
 WORKDIR /app
-COPY ..
+COPY . .
 RUN make all check || exit 1
 FROM alpine
 RUN apk add --no-cache jq
