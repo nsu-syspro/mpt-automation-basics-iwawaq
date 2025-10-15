@@ -18,7 +18,7 @@ $(EXECUTABLE): $(SOURCE) config.json | $(BUILD_DIR)
 $(BUILD_DIR):
 	mkdir -p $@
 check: $(EXECUTABLE)
-	$(foreach TEST,$(TESTS),\
+	@$(foreach TEST,$(TESTS),\
 		./$(EXECUTABLE) < $(TEST) > tmp.out; \
 		diff -q tmp.out $(patsubst %.txt,%.expected,$(TEST)) > /dev/null || \
 		(diff -u $(patsubst %.txt,%.expected,$(TEST)) tmp.out; \
