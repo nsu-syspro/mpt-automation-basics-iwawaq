@@ -12,12 +12,12 @@ CC := gcc
 all: $(EXECUTABLE)
 
 $(EXECUTABLE): $(SOURCE) config.json | $(BUILD_DIR)
-	$(CC) $(CFLAGS) -o $@ $<
+        $(CC) -o $@ $<
 
 $(BUILD_DIR):
-	mkdir -p $@
+        mkdir -p $@
 
 clean:
-	rm -rf $(BUILD_DIR)
+        rm -rf $(BUILD_DIR)
 
 $(EXECUTABLE): $(SOURCE) config.json
