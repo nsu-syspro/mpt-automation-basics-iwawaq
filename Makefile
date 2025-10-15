@@ -10,6 +10,7 @@ SOURCE := src/wordcount.c
 all: $(EXECUTABLE)
 
 $(EXECUTABLE): $(SOURCE) config.json | $(BUILD_DIR)
+ $(CC) $(CFLAGS) -o $@ $<
 
 $(BUILD_DIR):
  mkdir -p $@
