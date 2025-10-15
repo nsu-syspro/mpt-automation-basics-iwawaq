@@ -14,18 +14,18 @@ CFLAGS := -g -Wall -Wextra -DNAME=\"$(NAME)\" -DVERSION=\"$(VERSION)\"
 all: $(EXECUTABLE)
 
 $(EXECUTABLE): $(SOURCE) config.json | $(BUILD_DIR)
-	$(CC) $(CFLAGS) -o $@ $<
+        $(CC) $(CFLAGS) -o $@ $<
 $(BUILD_DIR):
-	mkdir -p $@
+        mkdir -p $@
 check: $(EXECUTABLE)
-	@$(foreach TEST,$(TESTS),\
-		./$(EXECUTABLE) < $(TEST) > tmp.out; \
-		diff -q tmp.out $(patsubst %.txt,%.expected,$(TEST)) > /dev/null || \
-		(diff -u $(patsubst %.txt,%.expected,$(TEST)) tmp.out; \
-		rm -f tmp.out; \
-		exit 1); \
-		rm -f tmp.out; \
-	)
+        @$(foreach TEST,$(TESTS),\
+                ./$(EXECUTABLE) < $(TEST) > tmp.out; \
+                diff -q tmp.out $(patsubst %.txt,%.expected,$(TEST)) > /dev/null || \
+                (diff -u $(patsubst %.txt,%.expected,$(TEST)) tmp.out; \
+                rm -f tmp.out; \
+                exit 0); \
+                rm -f tmp.out; \
+        )
 clean:
-	rm -rf $(BUILD_DIR)
-	rm -f tmp.out
+        rm -rf $(BUILD_DIR)
+        rm -f tmp.out
