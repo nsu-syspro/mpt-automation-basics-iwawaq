@@ -6,7 +6,7 @@ EXECUTABLE := $(BUILD_DIR)/$(NAME)
 SOURCE := src/wordcount.c
 TEST_DIR := test
 TESTS := $(wildcard $(TEST_DIR)/*.txt)
-EXPECTED := $(patsubst %.txt,%.expected,$(TESTS))
+EXPECTED := $(patsubst $(TEST_DIR)/%.txt,$(TEST_DIR)/%.expected,$(TESTS))
 
 CC := gcc
 CFLAGS := -g -Wall -Wextra -DNAME=\"$(NAME)\" -DVERSION=\"$(VERSION)\"
@@ -20,10 +20,10 @@ $(BUILD_DIR):
 check: $(EXECUTABLE)
 	@$(foreach TEST,$(TESTS),\
 		./$(EXECUTABLE) < $(TEST) > tmp.out; \
-		diff -q tmp.out $(patsubst %.txt,%.expected,$(TEST)) > /dev/null || \
-		(diff -u $(patsubst %.txt,%.expected,$(TEST)) tmp.out; \
+		diff -q tmp.out $(patsubst $(TEST_DIR)/%.txt,$(TEST_DIR)/%.expected,$(TEST)) > /dev/null || \
+		(diff -u $(patsubst $(TEST_DIR)/%.txt,$(TEST_DIR)/%.expected,$(TEST)) tmp.out; \
 		rm -f tmp.out; \
-		exit 0); \	
+		exit 1); \
 		rm -f tmp.out; \
 	)
 clean:
