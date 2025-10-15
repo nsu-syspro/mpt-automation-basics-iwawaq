@@ -1,10 +1,15 @@
 NAME := $(shell jq -r .name config.json)
 VERSION := $(shell jq -r .version config.json)
+
 BUILD_DIR := build
 EXECUTABLE := $(BUILD_DIR)/$(NAME)
 SOURCE := src/wordcount.c
-CFLAGS := -g -Wall -Wextra -DNAME=\"$(NAME)\" -DVERSION=\"$(VERSION)\"
+TEST_DIR := test
+TESTS := $(wildcard $(TEST_DIR)/*.txt)
+EXPECTED := $(patsubst %.txt,%.expected,$(TESTS))
+
 CC := gcc
+CFLAGS := -g -Wall -Wextra -DNAME=\"$(NAME)\" -DVERSION=\"$(VERSION)\"
 
 all: $(EXECUTABLE)
 
@@ -12,5 +17,15 @@ $(EXECUTABLE): $(SOURCE) config.json | $(BUILD_DIR)
 	$(CC) $(CFLAGS) -o $@ $<
 $(BUILD_DIR):
 	mkdir -p $@
+check: $(EXECUTABLE)
+	@$(foreach TEST,$(TESTS),\
+		./$(EXECUTABLE) < $(TEST) > tmp.out; \
+		diff -q tmp.out $(patsubst %.txt,%.expected,$(TEST)) > /dev/null || \
+		(diff -u $(patsubst %.txt,%.expected,$(TEST)) tmp.out; \
+		rm -f tmp.out; \
+		exit 1); \
+		rm -f tmp.out; \
+	)
 clean:
 	rm -rf $(BUILD_DIR)
+	rm -f tmp.out
