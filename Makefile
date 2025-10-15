@@ -1,29 +1,35 @@
 NAME := $(shell jq -r .name config.json)
 VERSION := $(shell jq -r .version config.json)
 
+SRC_DIR := src
 BUILD_DIR := build
-EXECUTABLE := $(BUILD_DIR)/$(NAME)
-SOURCE := src/wordcount.c
 TEST_DIR := test
-TESTS := $(wildcard $(TEST_DIR)/*.txt)
-EXPECTED := $(patsubst $(TEST_DIR)/%.txt,$(TEST_DIR)/%.expected,$(TESTS))
+SRC_FILES := $(wildcard $(SRC_DIR)/*.c)
+OBJ_FILES := $(SRC_FILES:$(SRC_DIR)/%.c=$(BUILD_DIR)/%.o)
 
-CC := gcc
-CFLAGS := -g -Wall -Wextra -DNAME=\"$(NAME)\" -DVERSION=\"$(VERSION)\"
+TARGET := $(BUILD_DIR)/$(NAME)
 
-all: $(EXECUTABLE)
+CFLAGS := -Wall -Wextra -std=c99
+CPPFLAGS := -DNAME="\"$(NAME)\"" -DVERSION="\"$(VERSION)\""
 
-$(EXECUTABLE): $(SOURCE) config.json | $(BUILD_DIR)
-	$(CC) $(CFLAGS) -o $@ $<
+TEST_FILES := $(wildcard $(TEST_DIR)/*.txt)
+
+all: $(TARGET)
+
+$(TARGET): $(OBJ_FILES) | $(BUILD_DIR)
+	$(CC) $(CFLAGS) $^ -o $@
+
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c | $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(CPPFLAGS) -c $< -o $@
+
 $(BUILD_DIR):
-	@$(foreach TEST,$(TESTS),\
-		./$(EXECUTABLE) < $(TEST) > tmp.out; \
-		diff -q tmp.out $(patsubst $(TEST_DIR)/%.txt,$(TEST_DIR)/%.expected,$(TEST)) > /dev/null || \
-		(diff -u $(patsubst $(TEST_DIR)/%.txt,$(TEST_DIR)/%.expected,$(TEST)) tmp.out; \
-		rm -f tmp.out; \
-		exit 0);\
-		rm -f tmp.out; \
-	)
+	mkdir -p $@
+
+check: $(TARGET)
+	@for test_file in $(TEST_FILES); do \
+		expected_file="$${test_file%.txt}.expected"; \
+		./$(TARGET) < "$${test_file}" | diff -q "$${expected_file}" - > /dev/null || \
+		{ echo "Test failed for $${test_file}:"; ./$(TARGET) < "$${test_file}" | diff -u "$${expected_file}" -; exit 1; }; \
+	done
 clean:
 	rm -rf $(BUILD_DIR)
-	rm -f tmp.out
