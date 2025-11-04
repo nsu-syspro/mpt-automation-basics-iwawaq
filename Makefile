@@ -15,7 +15,7 @@ CPPFLAGS := -DNAME="\"$(NAME)\"" -DVERSION="\"$(VERSION)\""
 TEST_INPUT_FILES := $(wildcard $(TEST_DIR)/*.txt)
 TEST_PASSED_FLAGS := $(patsubst $(TEST_DIR)/%.txt,$(BUILD_DIR)/%.passed,$(TEST_INPUT_FILES))
 
-.PHONY: all clean check
+.PHONY: all clean check force-check
 
 all: $(TARGET)
 
@@ -28,11 +28,13 @@ $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c config.json | $(BUILD_DIR)
 $(BUILD_DIR):
 	mkdir -p $@
 
-check: $(TEST_PASSED_FLAGS)
+check: force-check
 	@
 
+force-check: $(TEST_PASSED_FLAGS)
+	@rm -f $(TEST_PASSED_FLAGS)
+
 $(BUILD_DIR)/%.passed: $(TARGET) $(TEST_DIR)/%.txt $(TEST_DIR)/%.expected | $(BUILD_DIR)
-	@echo "Running test: $(patsubst $(BUILD_DIR)/%.passed,%,$@)..."
 	@./$(TARGET) < $(filter %.txt,$^) | diff -q $(filter %.expected,$^) - > /dev/null || \
 	{ ./$(TARGET) < $(filter %.txt,$^) | diff -u $(filter %.expected,$^) -; exit 1; }
 	@touch $@
