@@ -6,36 +6,36 @@ BUILD_DIR := build
 TEST_DIR := test
 
 SRC_FILES := $(wildcard $(SRC_DIR)/*.c)
-OBJ_FILES := $(SRC_FILES:$(SRC_DIR)/%.c=$(BUILD_DIR)/%.o)
+OBJ_FILES := $(patsubst $(SRC_DIR)/%.c,$(BUILD_DIR)/%.o,$(SRC_FILES))
 
 TARGET := $(BUILD_DIR)/$(NAME)
 
 CPPFLAGS := -DNAME="\"$(NAME)\"" -DVERSION="\"$(VERSION)\""
 
-TEST_FILES := $(wildcard $(TEST_DIR)/*.txt)
-TEST_TARGETS := $(TEST_FILES:$(TEST_DIR)/%.txt=check-%)
+TEST_INPUT_FILES := $(wildcard $(TEST_DIR)/*.txt)
+TEST_PASSED_FLAGS := $(patsubst $(TEST_DIR)/%.txt,$(BUILD_DIR)/%.passed,$(TEST_INPUT_FILES))
 
-.PHONY: all clean check $(TEST_TARGETS)
+.PHONY: all clean check
 
 all: $(TARGET)
 
 $(TARGET): $(OBJ_FILES) | $(BUILD_DIR)
 	$(CC) $^ -o $@
 
-$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c | $(BUILD_DIR)
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c config.json | $(BUILD_DIR)
 	$(CC) $(CPPFLAGS) -c $< -o $@
 
 $(BUILD_DIR):
 	mkdir -p $@
 
-check: $(TEST_TARGETS)
-	@
+check: $(TEST_PASSED_FLAGS)
+	@echo "All tests passed successfully."
 
-check-%: $(TARGET)
-	@test_file="$(TEST_DIR)/$*.txt"; \
-	expected_file="$(TEST_DIR)/$*.expected"; \
-	./$(TARGET) < "$$test_file" | diff -q "$$expected_file" - > /dev/null || \
-	{ echo "Test failed: $$test_file"; ./$(TARGET) < "$$test_file" | diff -u "$$expected_file" -; exit 1; }
+$(BUILD_DIR)/%.passed: $(TARGET) $(TEST_DIR)/%.txt $(TEST_DIR)/%.expected | $(BUILD_DIR)
+	@echo "Running test: $(patsubst $(BUILD_DIR)/%.passed,%,$@)..."
+	@./$(TARGET) < $(filter %.txt,$^) | diff -q $(filter %.expected,$^) - > /dev/null || \
+	{ ./$(TARGET) < $(filter %.txt,$^) | diff -u $(filter %.expected,$^) -; exit 1; }
+	@touch $@
 
 clean:
 	rm -rf $(BUILD_DIR)
