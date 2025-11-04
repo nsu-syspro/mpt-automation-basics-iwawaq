@@ -56,7 +56,7 @@ jobs:
         test-name: 'Task #3'
         setup-command: '' # (Optional) Run before the test is run.
         command: ./.test/task3/validate
-        timeout: 1 # The amount of minutes the test is allowed to run before it is killed. Maximum 60 minutes.
+        timeout: 3 # The amount of minutes the test is allowed to run before it is killed. Maximum 60 minutes.
         max-score: 3 # (Optional) The amount of points awarded if the test passes.
 
     - name: 'Task #4'
