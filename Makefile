@@ -21,11 +21,18 @@ all: $(TARGET)
 $(TARGET): $(OBJ_FILES) | $(BUILD_DIR)
 	$(CC) $^ -o $@
 
-$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c config.json | $(BUILD_DIR)
+CONFIG_HASH := $(shell jq -c . config.json | md5sum | cut -d' ' -f1)
+CONFIG_STAMP := $(BUILD_DIR)/.config.$(CONFIG_HASH).stamp
+
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c $(CONFIG_STAMP) | $(BUILD_DIR)
 	$(CC) $(CPPFLAGS) -c $< -o $@
 
 $(BUILD_DIR):
 	mkdir -p $@
+
+$(CONFIG_STAMP): config.json | $(BUILD_DIR)
+	@rm -f $(BUILD_DIR)/.config.*.stamp
+	@touch $@
 
 check: $(TEST_TARGETS)
 	@
