@@ -13,7 +13,9 @@ CPPFLAGS := -DNAME="\"$(NAME)\"" -DVERSION="\"$(VERSION)\""
 
 TEST_FILES := $(wildcard $(TEST_DIR)/*.txt)
 
-.PHONY: all clean check
+TEST_TARGETS := $(TEST_FILES:$(TEST_DIR)/%.txt=check-%)
+
+.PHONY: all clean check $(TEST_TARGETS)
 
 all: $(TARGET)
 
@@ -26,12 +28,14 @@ $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c config.json | $(BUILD_DIR)
 $(BUILD_DIR):
 	mkdir -p $@
 
-check: $(TARGET)
-	@for test_file in $(TEST_FILES); do \
-		expected_file="$${test_file%.txt}.expected"; \
-		./$(TARGET) < "$${test_file}" | diff -q "$${expected_file}" - > /dev/null || \
-		{ ./$(TARGET) < "$${test_file}" | diff -u "$${expected_file}" -; exit 1; }; \
-	done
+check: $(TEST_TARGETS)
+
+check-%: $(TARGET)
+	@test_file="$(TEST_DIR)/$*.txt"; \
+	expected_file="$(TEST_DIR)/$*.expected"; \
+	echo "Running test: $$test_file"; \
+	./$(TARGET) < "$$test_file" | diff -q "$$expected_file" - > /dev/null || \
+	{ echo "Test failed: $$test_file"; ./$(TARGET) < "$$test_file" | diff -u "$$expected_file" -; exit 1; }
 
 clean:
 	rm -rf $(BUILD_DIR)
