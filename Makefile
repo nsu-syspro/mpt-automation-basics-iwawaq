@@ -21,7 +21,7 @@ all: $(TARGET)
 $(TARGET): $(OBJ_FILES) | $(BUILD_DIR)
 	$(CC) $^ -o $@
 
-$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c | $(BUILD_DIR)
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c config.json | $(BUILD_DIR)
 	$(CC) $(CPPFLAGS) -c $< -o $@
 
 $(BUILD_DIR):
